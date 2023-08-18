@@ -4,9 +4,10 @@
     {
         private const string NOON = "pm";
         private const string MIDNIGHT = "am";
-        private const int HOURS_INDEX = 0;
-        private const int MINUTES_INDEX = 1;
         private const int HOURS_12 = 12;
+        private const int TOTAL_WIDTH_ZERO = 2;
+        private const char ZERO_CHARACTER = '0';
+
 
         public static string Convert12hTo24h(int hours, int minutes, string period)
         {
@@ -57,7 +58,7 @@
         private static string ConvertTime(int hours, int minutes, string period)
         {
 
-            int determinateCase = DeterminateCase(hours, minutes, period);
+            EnumCase determinateCase = DeterminateCase(hours, minutes, period);
             
             var time = new TimeSpan(hours, minutes, 0);
 
@@ -65,22 +66,20 @@
 
             switch (determinateCase)
             {
-                case 1:
+                case EnumCase.One:
                     response = FormatOutput(time);
                     break;
-                case 2:
+                case EnumCase.Two:
                     time = time.Add(new TimeSpan(HOURS_12, 0, 0));
                     response = FormatOutput(time);
                     break;
-                case 3:
-                    response = "00" + PadLeftWithZeros(time.Minutes, 2);
+                case EnumCase.Three:
+                    response = "00" + PadLeftWithZeros(time.Minutes, TOTAL_WIDTH_ZERO);
 
                     break;
-                case 4:
-                    response = "12" + PadLeftWithZeros(time.Minutes, 2);
+                case EnumCase.Four:
+                    response = "12" + PadLeftWithZeros(time.Minutes, TOTAL_WIDTH_ZERO);
                     break;
-
-               
             }
             return response;
         }
@@ -90,36 +89,27 @@
             return $"{PadLeftWithZeros(time.Hours, 2)}{PadLeftWithZeros(time.Minutes, 2)}";
         }
 
-        private static int DeterminateCase(int hours, int minutes, string period)
+        private static EnumCase DeterminateCase(int hours, int minutes, string period)
         {
 
             if (hours == HOURS_12 && period.Equals(NOON))
-            {
-                return 4;
-            }
+                return EnumCase.Four;
 
             if (hours == HOURS_12 && period.Equals(MIDNIGHT))
-            {
-                return 3;
-            }
-
+                return EnumCase.Three;
 
             if (period.Equals(NOON))
-            {
-                return 2;
-            }
-
+                return EnumCase.Two;
 
             if (period.Equals(MIDNIGHT))
-            {
-                return 1;
-            }
-            return 0;
+                return EnumCase.One;
+
+            throw new Exception("Undeterminated case.");
         }
 
         private static string PadLeftWithZeros(int number, int totalWidth)
         {
-            return number.ToString().PadLeft(totalWidth, '0');
+            return number.ToString().PadLeft(totalWidth, ZERO_CHARACTER);
         }
     }
 
@@ -129,4 +119,13 @@
         Hour,
         Period
     }
+
+    public enum EnumCase
+    {
+        One, // When the period=am
+        Two, // When the period=pm
+        Three, // When the hours=12 and period=am
+        Four // When the hours=12 and period=pm
+    }
+
 }
